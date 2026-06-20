@@ -4,6 +4,7 @@ const assert = require('node:assert');
 const {
   normalizeThai, levenshtein, fuzzyContains,
   looksLikeSlip, matchName, verifyOcrText,
+  normalizeRef, extractRef, amountMatches,
 } = require('../lib/slip-verify');
 
 test('normalizeThai ตัดช่องว่างและทำตัวพิมพ์เล็ก', () => {
@@ -51,4 +52,24 @@ test('verifyOcrText: ครบทุกสถานะ', () => {
   assert.strictEqual(verifyOcrText(slipOk, { expectedName: expected }).status, 'verified');
   assert.strictEqual(verifyOcrText(slipWrong, { expectedName: expected }).status, 'unverified');
   assert.strictEqual(verifyOcrText('สวัสดีตอนเช้า', { expectedName: expected }).status, 'not_a_slip');
+});
+
+test('normalizeRef: uppercase + ตัดอักขระอื่น', () => {
+  assert.strictEqual(normalizeRef(' ab-12 cd '), 'AB12CD');
+  assert.strictEqual(normalizeRef(null), '');
+});
+
+test('extractRef: หลังคำชี้ / fallback / ไม่มี', () => {
+  assert.strictEqual(extractRef('รหัสอ้างอิง: 0150ABC7890'), '0150ABC7890');
+  assert.strictEqual(extractRef('เลขที่รายการ 202406211234XYZ'), '202406211234XYZ');
+  assert.strictEqual(extractRef('โอนเงิน abc 0123456789012345 บาท'), '0123456789012345');
+  assert.strictEqual(extractRef('โอนเงินสำเร็จ 50 บาท'), null);
+});
+
+test('amountMatches: ตรง / ไม่ตรง / ไม่มียอด / ทน comma / กัน substring', () => {
+  assert.strictEqual(amountMatches('จำนวนเงิน 50.37 บาท', 50.37), true);
+  assert.strictEqual(amountMatches('จำนวนเงิน 1,050.37 บาท', 1050.37), true);
+  assert.strictEqual(amountMatches('จำนวน 99.00 บาท', 50.37), false);
+  assert.strictEqual(amountMatches('โอนสำเร็จ ขอบคุณครับ', 50.37), null);
+  assert.strictEqual(amountMatches('ยอด 150.37 บาท', 50.37), false);
 });
