@@ -35,6 +35,7 @@
     confettiEnabled: true, accentColor: '#b14dff', accentColor2: '#2ce8f5',
     textColor: '#ffffff', position: 'top',
     headlineTemplate: '{name} บริจาค {amount}', currency: '฿',
+    ttsProvider: 'elevenlabs', ttsVoiceId: 'cgSgspJ2msm6clMCkdW9',
   };
 
   function applySettings(next) {
@@ -230,22 +231,43 @@
     );
   }
 
-  function speak(d) {
+  // เล่นเสียงเบราว์เซอร์ (fallback)
+  function speakBrowser(text) {
     if (!('speechSynthesis' in window)) return 0;
     try {
-      let text = '';
-      if (settings.speakAmount) text += d.name + ' บริจาค ' + fmt(d.amount) + ' บาท. ';
-      if (d.message) text += d.message;
-      if (!text.trim()) return 0;
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = settings.ttsLang || 'th-TH';
       const voice = pickVoice(u.lang);
-      if (voice) u.voice = voice; // บังคับใช้เสียงไทยจริง ถ้ามีติดตั้งในเครื่อง
+      if (voice) u.voice = voice;
       u.rate = 1; u.pitch = 1; u.volume = 1;
       setTimeout(() => window.speechSynthesis.speak(u), 500);
       return Math.max(2000, text.length * 75 + 600);
     } catch (e) { return 0; }
+  }
+
+  // เล่นเสียงจาก ElevenLabs (ผ่าน /api/tts); ถ้าพลาด -> fallback เบราว์เซอร์
+  function speakElevenLabs(text) {
+    try {
+      const audio = new Audio('/api/tts?text=' + encodeURIComponent(text));
+      audio.volume = Math.min(1, Math.max(0, settings.volume));
+      let fellBack = false;
+      const fallbackOnce = () => { if (fellBack) return; fellBack = true; speakBrowser(text); };
+      audio.addEventListener('error', fallbackOnce); // เช่น 502/503 -> fallback (ครั้งเดียว)
+      const p = audio.play();
+      if (p && p.catch) p.catch(fallbackOnce);
+    } catch (e) { speakBrowser(text); }
+  }
+
+  function speak(d) {
+    let text = '';
+    if (settings.speakAmount) text += d.name + ' บริจาค ' + fmt(d.amount) + ' บาท. ';
+    if (d.message) text += d.message;
+    if (!text.trim()) return 0;
+    if (settings.ttsProvider === 'elevenlabs') speakElevenLabs(text);
+    else speakBrowser(text);
+    // คืนเวลาประมาณการให้การ์ดค้างพออ่านจบ (ElevenLabs เล่นแบบ async)
+    return Math.max(2000, text.length * 75 + 600);
   }
 
   // ---------- Particle engine (canvas) ----------

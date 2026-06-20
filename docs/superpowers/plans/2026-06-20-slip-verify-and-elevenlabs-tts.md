@@ -1177,7 +1177,6 @@ git commit -m "feat(tts): play ElevenLabs audio in overlay with browser fallback
               <option value="TX3LPaxmHKxFdv7VOQHJ">Liam — มีพลัง (ชาย)</option>
               <option value="IKne3meq5aSn9XLyUdCD">Charlie — ทุ้ม มั่นใจ (ชาย)</option>
               <option value="EXAVITQu4vr4xnSDxMaL">Sarah — ชัดเจน น่าเชื่อถือ (หญิง)</option>
-              <option value="cgSgspJ2msm6clMCkdW9">— (Jessica ค่าเริ่มต้น) —</option>
             </select>
           </div>
         </div>

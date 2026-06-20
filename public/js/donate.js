@@ -93,7 +93,7 @@
     }
   });
 
-  // ---- ขั้นที่ 2: อัปโหลดสลิป (ยืนยันอัตโนมัติ) ----
+  // ---- ขั้นที่ 2: อัปโหลดสลิป (ตรวจ OCR ก่อนยืนยัน) ----
   $('confirm-btn').addEventListener('click', async () => {
     const file = $('slip').files[0];
     if (!file) {
@@ -102,7 +102,7 @@
     }
     const confirmBtn = $('confirm-btn');
     confirmBtn.disabled = true;
-    confirmBtn.textContent = 'กำลังส่ง...';
+    confirmBtn.textContent = '⏳ กำลังตรวจสลิป...';
     try {
       const fd = new FormData();
       fd.append('slip', file);
@@ -110,6 +110,8 @@
       const data = await res.json();
       if (data.ok) {
         show('done');
+      } else if (data.reason === 'not_a_slip') {
+        showToast(toast2, '❌ ไม่ใช่สลิป หรืออ่านไม่ออก แนบสลิปที่ชัดเจน', 'err');
       } else {
         showToast(toast2, data.error || 'อัปโหลดไม่สำเร็จ', 'err');
       }

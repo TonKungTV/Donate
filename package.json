@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "test": "node --test",
     "service:install": "node deploy/service.js install",
     "service:uninstall": "node deploy/service.js uninstall"
   },
@@ -29,9 +30,13 @@
     "multer": "^2.0.0",
     "promptpay-qr": "^0.5.0",
     "qrcode": "^1.5.4",
-    "socket.io": "^4.7.5"
+    "socket.io": "^4.7.5",
+    "tesseract.js": "^7.0.0"
   },
   "optionalDependencies": {
     "node-windows": "^1.0.0-beta.8"
+  },
+  "devDependencies": {
+    "supertest": "^7.2.2"
   }
 }

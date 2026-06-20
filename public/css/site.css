@@ -607,3 +607,11 @@ code {
   .card { padding: 22px; }
   .nav { justify-content: center; }
 }
+
+/* ===== ป้ายสถานะตรวจสลิป (Dashboard) ===== */
+.verify-badge { font-weight: 600; }
+.verify-badge.v-ok   { color: #36d399; }
+.verify-badge.v-warn { color: #fbbd23; }
+.verify-badge.v-err  { color: #9aa3b2; }
+.history-item.flagged-unverified { border-left: 3px solid #fbbd23; padding-left: 9px; }
+.history-item.flagged-error      { border-left: 3px solid #9aa3b2; padding-left: 9px; }

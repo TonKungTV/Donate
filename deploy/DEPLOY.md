@@ -1,7 +1,8 @@
 # 🚀 คู่มือ Deploy — Donate Overlay บน VPS
 
 มี public IP บนเครื่องอยู่แล้ว แค่ต้อง (1) รันเซิร์ฟเวอร์ให้ค้างไว้ (2) เปิดพอร์ตที่ไฟร์วอลล์
-เอกสารนี้เน้น **Windows Server 2012** เป็นหลัก และมีทางเลือก Docker ต่อท้าย
+เอกสารนี้เน้นการ deploy บน **Linux** (Docker / pm2) เป็นหลัก → ข้ามไปหัวข้อ **[🐧 รันบน Linux (แนะนำ)](#-รันบน-linux-แนะนำ)** ด้านล่าง
+ส่วนวิธีรันบน **Windows Server 2012 (legacy)** ยังเก็บไว้ถัดไปสำหรับใครที่ยังใช้เครื่องเดิม
 
 ---
 
@@ -14,7 +15,7 @@
 
 ---
 
-## ✅ วิธีที่แนะนำ: รันแบบ Native + Windows Service
+## 🪟 (Legacy) Windows Server 2012 — รันแบบ Native + Windows Service
 
 ### 1) ติดตั้ง Node.js
 
@@ -135,3 +136,38 @@ docker compose down       # หยุด
 | service ติดตั้งไม่ได้ | รัน PowerShell แบบ Administrator; หรือใช้ PM2 แทน |
 | คนนอกแก้ตั้งค่า overlay ได้ | ตั้ง `ADMIN_KEY` ใน `.env` แล้วรีสตาร์ท |
 | เปลี่ยนพอร์ต | แก้ `PORT` ใน `.env` + เปิดพอร์ตใหม่ที่ไฟร์วอลล์ |
+
+---
+
+## 🐧 รันบน Linux (แนะนำ)
+
+### ตัวเลือก A — Docker
+```bash
+cp .env.example .env   # ใส่ ELEVENLABS_API_KEY และค่าอื่น ๆ
+docker compose up -d
+docker compose logs -f
+```
+ข้อมูล (สลิป/สถิติ/ตั้งค่า/แคชเสียง) เก็บใน `./data` ผ่าน volume
+
+### ตัวเลือก B — Native + pm2
+```bash
+npm install
+cp .env.example .env && nano .env
+npm install -g pm2
+pm2 start server.js --name donate-overlay
+pm2 save && pm2 startup
+```
+
+## 🧾 OCR (ตรวจสลิป)
+- ใช้ `tesseract.js` — ครั้งแรกจะดาวน์โหลดไฟล์ภาษา `tha`/`eng` จาก CDN แล้วแคชไว้
+- แบบ offline: ดาวน์โหลด `tha.traineddata` + `eng.traineddata` จาก
+  https://github.com/tesseract-ocr/tessdata_fast วางใน `vendor/tessdata/`
+  แล้วตั้ง `TESSDATA_PATH=/app/vendor/tessdata` ใน `.env`
+- ปรับ timeout ได้ที่ `OCR_TIMEOUT_MS` (ดีฟอลต์ 20000)
+- เปิด/ปิดการตรวจ และตั้งชื่อผู้รับได้จากหน้า Control Panel
+
+## 🗣️ เสียง ElevenLabs
+- ใส่ `ELEVENLABS_API_KEY` ใน `.env` (เว้นว่าง = ใช้เสียงเบราว์เซอร์อัตโนมัติ)
+- เลือกเสียง/แหล่งเสียงได้จากหน้า Control Panel
+- คิดเงินตามจำนวนตัวอักษร — ระบบแคชไฟล์เสียงข้อความซ้ำใน `data/tts/`
+- ⚠️ ถ้าคีย์เคยถูกแชร์ในที่สาธารณะ ให้ revoke แล้วออกใหม่

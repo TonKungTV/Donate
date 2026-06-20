@@ -12,7 +12,10 @@ RUN npm install --omit=dev --omit=optional --no-audit --no-fund
 
 # คัดลอกซอร์ส
 COPY server.js ./
+COPY lib ./lib
 COPY public ./public
+# traineddata แบบ offline (ถ้ามีโฟลเดอร์ vendor/tessdata จะถูกใช้; ถ้าไม่มี tesseract.js โหลดจาก CDN เอง)
+COPY vendor* ./vendor
 
 # เก็บข้อมูล (สลิป/สถิติ/ตั้งค่า) ไว้ใน volume
 RUN mkdir -p /app/data && addgroup -S app && adduser -S app -G app && chown -R app:app /app

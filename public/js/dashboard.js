@@ -49,6 +49,14 @@
       const li = document.createElement('li');
       li.className = 'history-item';
 
+      // ป้ายสถานะตรวจสลิป
+      const V = { verified:  ['v-ok',   '✅ ตรวจแล้ว'],
+                  unverified:['v-warn', '⚠️ ชื่อไม่ตรง—ตรวจเอง'],
+                  error:     ['v-err',  '🔁 ตรวจไม่ได้'] };
+      if (d.verify && V[d.verify.status]) {
+        li.classList.add('flagged-' + d.verify.status);
+      }
+
       const left = document.createElement('div');
       left.style.flex = '1';
       const name = document.createElement('span');
@@ -80,6 +88,14 @@
         link.textContent = '🧾 ดูสลิป';
         link.style.cssText = 'display:block;font-size:.78rem';
         right.append(link);
+      }
+
+      if (d.verify && V[d.verify.status]) {
+        const badge = document.createElement('span');
+        badge.className = 'verify-badge ' + V[d.verify.status][0];
+        badge.textContent = V[d.verify.status][1];
+        badge.style.cssText = 'display:block;font-size:.72rem;margin-top:2px';
+        right.append(badge);
       }
 
       li.append(left, amount, right);
