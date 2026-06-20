@@ -83,6 +83,22 @@
       </div>
     </div>
 
+    <!-- ตรวจสลิป -->
+    <div class="card">
+      <h2>🧾 ตรวจสลิป (OCR)</h2>
+      <p class="subtitle" style="margin-bottom:16px">ตรวจว่าเป็นสลิปจริงและโอนเข้าชื่อผู้รับที่กำหนด ก่อนแจ้งเตือนขึ้นจอ</p>
+      <div class="control-grid">
+        <div class="setting-row">
+          <div class="s-label">เปิดการตรวจสลิป<small>ปิด = เชื่อใจ ยืนยันทันที</small></div>
+          <div class="s-input"><label class="switch"><input type="checkbox" id="verifyEnabled" /><span class="slider"></span></label></div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">ชื่อผู้รับที่ต้องตรงในสลิป</div>
+          <div class="s-input"><input type="text" id="expectedName" style="width:240px" maxlength="60" /></div>
+        </div>
+      </div>
+    </div>
+
     <!-- เสียง -->
     <div class="card">
       <h2>🔊 เสียง</h2>
@@ -103,6 +119,26 @@
       <h2>🗣️ อ่านข้อความ (TTS)</h2>
       <p class="subtitle" style="margin-bottom:16px">ค่าเริ่มต้นเป็น <b>ภาษาไทย</b> แล้ว — แต่จะออกเสียงไทยได้จริงต้องมี <b>เสียงไทยติดตั้งในเครื่องที่รัน OBS</b><br><small class="muted">Windows: Settings → Time &amp; Language → Speech → Manage voices → Add → Thai (เช่น Premwadee/Niwat)</small></p>
       <div class="control-grid">
+        <div class="setting-row">
+          <div class="s-label">แหล่งเสียง</div>
+          <div class="s-input">
+            <select id="ttsProvider">
+              <option value="elevenlabs">ElevenLabs (คุณภาพสูง)</option>
+              <option value="browser">เบราว์เซอร์ (ฟรี)</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">เสียง ElevenLabs</div>
+          <div class="s-input">
+            <select id="ttsVoiceId">
+              <option value="cgSgspJ2msm6clMCkdW9">Jessica — สดใส อบอุ่น (หญิง)</option>
+              <option value="TX3LPaxmHKxFdv7VOQHJ">Liam — มีพลัง (ชาย)</option>
+              <option value="IKne3meq5aSn9XLyUdCD">Charlie — ทุ้ม มั่นใจ (ชาย)</option>
+              <option value="EXAVITQu4vr4xnSDxMaL">Sarah — ชัดเจน น่าเชื่อถือ (หญิง)</option>
+            </select>
+          </div>
+        </div>
         <div class="setting-row">
           <div class="s-label">เปิดการอ่านข้อความ</div>
           <div class="s-input"><label class="switch"><input type="checkbox" id="ttsEnabled" /><span class="slider"></span></label></div>

@@ -20,6 +20,10 @@
     ttsEnabled: 'bool',
     speakAmount: 'bool',
     confettiEnabled: 'bool',
+    verifyEnabled: 'bool',
+    expectedName: 'text',
+    ttsProvider: 'text',
+    ttsVoiceId: 'text',
   };
 
   let settings = {};
