@@ -23,6 +23,7 @@ const generatePayload = require('promptpay-qr');
 const QRCode = require('qrcode');
 const { verifyOcrText } = require('./lib/slip-verify');
 const ocr = require('./lib/ocr'); // ใช้ ocr.runOcr เพื่อให้ mock ได้ตอนเทสต์
+const tts = require('./lib/tts'); // ใช้ tts.getOrSynthesize เพื่อให้ mock ได้ตอนเทสต์
 
 const app = express();
 const server = http.createServer(app);
@@ -32,6 +33,8 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_KEY = process.env.ADMIN_KEY || ''; // ถ้าตั้งค่าไว้ จะต้องใช้คีย์นี้สำหรับงานฝั่งแอดมิน
 const CURRENCY = process.env.CURRENCY || '฿';
 const PROMPTPAY_ID = process.env.PROMPTPAY_ID || '0634284604'; // เบอร์/เลขบัตรพร้อมเพย์ของสตรีมเมอร์
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || '';
+const ELEVENLABS_MODEL = process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2';
 
 // ----- ที่เก็บข้อมูล -----
 const DATA_DIR = process.env.DATA_DIR_OVERRIDE || path.join(__dirname, 'data');
@@ -359,6 +362,29 @@ app.get('/api/stats', (req, res) => res.json({ ok: true, stats: buildStats() }))
 app.get('/api/leaderboard', (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 10, 50);
   res.json({ ok: true, leaderboard: buildLeaderboard(limit) });
+});
+
+// ----- เสียง TTS (ElevenLabs ฝั่งเซิร์ฟเวอร์ + แคช) -----
+app.get('/api/tts', async (req, res) => {
+  const text = sanitizeText(req.query.text, 300);
+  if (!text) return res.status(400).json({ ok: false, error: 'ต้องมีพารามิเตอร์ text' });
+  if (settings.ttsProvider !== 'elevenlabs' || !ELEVENLABS_API_KEY) {
+    return res.status(503).json({ ok: false, error: 'ElevenLabs ไม่พร้อมใช้งาน (ใช้เสียงเบราว์เซอร์แทน)' });
+  }
+  try {
+    const { buffer } = await tts.getOrSynthesize(text, {
+      voiceId: settings.ttsVoiceId,
+      model: ELEVENLABS_MODEL,
+      apiKey: ELEVENLABS_API_KEY,
+      cacheDir: TTS_DIR,
+    });
+    res.set('Content-Type', 'audio/mpeg');
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(buffer);
+  } catch (e) {
+    console.error('TTS ล้มเหลว:', e.message);
+    res.status(502).json({ ok: false, error: 'สร้างเสียงไม่สำเร็จ' });
+  }
 });
 
 // ----- การตั้งค่า overlay -----
