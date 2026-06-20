@@ -1,0 +1,15 @@
+services:
+  donate-overlay:
+    build: .
+    image: donate-overlay
+    container_name: donate-overlay
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - PORT=3000
+      - PROMPTPAY_ID=${PROMPTPAY_ID:-0634284604}
+      - CURRENCY=${CURRENCY:-฿}
+      - ADMIN_KEY=${ADMIN_KEY:-}
+    volumes:
+      - ./data:/app/data

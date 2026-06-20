@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>อันดับผู้บริจาค • Donate Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&family=Sarabun:wght@400;600;700&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+  <div class="container">
+    <nav class="nav">
+      <div class="brand"><span class="logo">💸</span> Donate Overlay</div>
+      <div class="links">
+        <a href="/">บริจาค</a>
+        <a href="/leaderboard.html" class="active">อันดับ</a>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/control.html">Control</a>
+      </div>
+    </nav>
+
+    <div class="card">
+      <h1>🏆 อันดับผู้บริจาคสูงสุด</h1>
+      <p class="subtitle">รวมยอดบริจาคของแต่ละชื่อ อัปเดตอัตโนมัติแบบเรียลไทม์</p>
+      <ul class="lb-list" id="leaderboard"><li class="empty">ยังไม่มีผู้บริจาค — มาเป็นคนแรกกันเถอะ!</li></ul>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/leaderboard.js"></script>
+</body>
+</html>

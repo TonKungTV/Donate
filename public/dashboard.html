@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard • Donate Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&family=Sarabun:wght@400;600;700&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+  <div class="container">
+    <nav class="nav">
+      <div class="brand"><span class="logo">💸</span> Donate Overlay</div>
+      <div class="links">
+        <a href="/">บริจาค</a>
+        <a href="/leaderboard.html">อันดับ</a>
+        <a href="/dashboard.html" class="active">Dashboard</a>
+        <a href="/control.html">Control</a>
+      </div>
+    </nav>
+
+    <!-- สถิติรวม -->
+    <div class="card">
+      <h2>สรุปภาพรวม <span id="conn"><span class="status-dot"></span><span class="muted" style="font-size:.8rem">offline</span></span></h2>
+      <div class="stats-grid">
+        <div class="stat"><div class="value" id="st-total">฿0</div><div class="label">ยอดบริจาครวม</div></div>
+        <div class="stat"><div class="value" id="st-count">0</div><div class="label">จำนวนครั้ง</div></div>
+        <div class="stat"><div class="value" id="st-avg">฿0</div><div class="label">เฉลี่ย/ครั้ง</div></div>
+        <div class="stat"><div class="value" id="st-top">-</div><div class="label">ยอดสูงสุด</div></div>
+      </div>
+    </div>
+
+    <!-- ทดสอบแจ้งเตือน -->
+    <div class="card">
+      <h2>🧪 ทดสอบแจ้งเตือน (ไม่บันทึกลงสถิติ)</h2>
+      <div class="row">
+        <div class="field"><label>ชื่อ</label><input type="text" id="t-name" placeholder="ผู้ทดสอบ" maxlength="40" /></div>
+        <div class="field"><label>จำนวนเงิน</label><input type="number" id="t-amount" placeholder="99" min="1" /></div>
+      </div>
+      <div class="field"><label>ข้อความ</label><input type="text" id="t-message" placeholder="ขอบคุณครับ! 🎉" maxlength="200" /></div>
+      <button class="btn btn-primary" id="t-send">ยิงแจ้งเตือนทดสอบ</button>
+    </div>
+
+    <!-- ลิงก์ OBS -->
+    <div class="card">
+      <h2>🎥 ลิงก์สำหรับ OBS</h2>
+      <p class="subtitle">เพิ่ม <b>Browser Source</b> ใน OBS แล้ววาง URL นี้ (พื้นหลังโปร่งใสอัตโนมัติ)</p>
+      <div class="field">
+        <label>Overlay URL</label>
+        <div class="row" style="align-items:stretch">
+          <input type="text" id="obs-url" readonly style="flex:3" />
+          <button class="btn btn-ghost" id="copy-url" style="flex:1">คัดลอก</button>
+        </div>
+      </div>
+      <p class="note" style="text-align:left">
+        ปรับแต่งหน้าตา overlay ได้ที่หน้า <a href="/control.html">Control Panel</a>
+        หรือ override ด้วย query เช่น <code>?duration=10000&tts=0&volume=0.8&position=center</code>
+      </p>
+    </div>
+
+    <!-- ประวัติ -->
+    <div class="card">
+      <h2 style="display:flex;justify-content:space-between;align-items:center">
+        🕑 ประวัติล่าสุด (ยืนยันแล้ว)
+        <button class="btn btn-danger" id="clear-btn" style="padding:8px 14px;font-size:.85rem">ล้างข้อมูล</button>
+      </h2>
+      <ul class="history" id="history"><li class="empty">ยังไม่มีรายการบริจาค</li></ul>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

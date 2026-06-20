@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control Panel • Donate Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&family=Sarabun:wght@400;600;700&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+  <div class="container">
+    <nav class="nav">
+      <div class="brand"><span class="logo">💸</span> Donate Overlay</div>
+      <div class="links">
+        <a href="/">บริจาค</a>
+        <a href="/leaderboard.html">อันดับ</a>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/control.html" class="active">Control</a>
+      </div>
+    </nav>
+
+    <!-- พรีวิวสด -->
+    <div class="card">
+      <h2>👁️ พรีวิว <span class="muted" style="font-size:.8rem">(อัปเดตตามที่ปรับด้านล่าง)</span></h2>
+      <div class="preview-stage" id="preview-stage">
+        <div class="preview-alert" id="preview-alert">
+          <div class="p-emoji">🎉</div>
+          <div class="p-headline" id="p-headline"></div>
+          <div class="p-message" id="p-message">“ขอบคุณสำหรับสตรีมดี ๆ ครับ!”</div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn btn-ghost" id="test-btn">🔔 ทดสอบบน overlay จริง</button>
+        <button class="btn btn-primary" id="save-btn">💾 บันทึกการตั้งค่า</button>
+      </div>
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <!-- การแสดงผล -->
+    <div class="card">
+      <h2>🎨 การแสดงผล</h2>
+      <p class="subtitle" style="margin-bottom:16px">overlay มีระดับ <b>tier</b> ตามยอดอัตโนมัติ — <span style="color:#b14dff">SPARK</span> (&lt;฿100) ใช้สีที่ตั้งด้านล่าง · <span style="color:#2ce8f5">HYPE</span> (฿100+) · <span style="color:#ff3ca6">MEGA</span> (฿500+) · <span style="color:#ffc24b">LEGENDARY</span> (฿1,000+) ใช้สีเฉพาะตัว + เอฟเฟกต์จัดเต็ม</p>
+      <div class="control-grid">
+        <div class="setting-row">
+          <div class="s-label">ข้อความหัวเรื่อง<small>ใช้ตัวแปร: {name} {amount} {currency}</small></div>
+          <div class="s-input"><input type="text" id="headlineTemplate" style="width:240px" maxlength="120" /></div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">สีหลัก (ขอบ/ชื่อ)</div>
+          <div class="s-input"><input type="color" id="accentColor" /></div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">สีรอง (จำนวนเงิน)</div>
+          <div class="s-input"><input type="color" id="accentColor2" /></div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">สีตัวอักษร</div>
+          <div class="s-input"><input type="color" id="textColor" /></div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">ตำแหน่งบนจอ</div>
+          <div class="s-input">
+            <select id="position">
+              <option value="top">บน</option>
+              <option value="center">กลาง</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">สัญลักษณ์สกุลเงิน</div>
+          <div class="s-input"><input type="text" id="currency" style="width:80px" maxlength="6" /></div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">เวลาแสดงผล<small>การ์ดค้างบนจอ</small></div>
+          <div class="s-input"><input type="range" id="duration" min="2000" max="20000" step="500" /><span class="mono" id="duration-val">8.0s</span></div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">คอนเฟตติ</div>
+          <div class="s-input"><label class="switch"><input type="checkbox" id="confettiEnabled" /><span class="slider"></span></label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- เสียง -->
+    <div class="card">
+      <h2>🔊 เสียง</h2>
+      <div class="control-grid">
+        <div class="setting-row">
+          <div class="s-label">เสียงแจ้งเตือน</div>
+          <div class="s-input"><label class="switch"><input type="checkbox" id="soundEnabled" /><span class="slider"></span></label></div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">ระดับเสียง</div>
+          <div class="s-input"><input type="range" id="volume" min="0" max="1" step="0.05" /><span class="mono" id="volume-val">60%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- อ่านข้อความ (TTS) -->
+    <div class="card">
+      <h2>🗣️ อ่านข้อความ (TTS)</h2>
+      <p class="subtitle" style="margin-bottom:16px">ค่าเริ่มต้นเป็น <b>ภาษาไทย</b> แล้ว — แต่จะออกเสียงไทยได้จริงต้องมี <b>เสียงไทยติดตั้งในเครื่องที่รัน OBS</b><br><small class="muted">Windows: Settings → Time &amp; Language → Speech → Manage voices → Add → Thai (เช่น Premwadee/Niwat)</small></p>
+      <div class="control-grid">
+        <div class="setting-row">
+          <div class="s-label">เปิดการอ่านข้อความ</div>
+          <div class="s-input"><label class="switch"><input type="checkbox" id="ttsEnabled" /><span class="slider"></span></label></div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">อ่านชื่อ + จำนวนเงินด้วย</div>
+          <div class="s-input"><label class="switch"><input type="checkbox" id="speakAmount" /><span class="slider"></span></label></div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">ภาษา</div>
+          <div class="s-input">
+            <select id="ttsLang">
+              <option value="th-TH">ไทย (th-TH)</option>
+              <option value="en-US">English (en-US)</option>
+              <option value="ja-JP">日本語 (ja-JP)</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="s-label">อ่านเฉพาะยอด ≥<small>กรองข้อความเสียงสำหรับยอดน้อย</small></div>
+          <div class="s-input"><input type="number" id="minTts" min="0" style="width:90px" /></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:center">
+      <p class="note" style="margin:0 0 12px">ลิงก์ Overlay สำหรับ OBS: <code id="obs-url">/overlay.html</code></p>
+      <button class="btn btn-danger" id="reset-btn" style="max-width:240px;margin:0 auto">คืนค่าเริ่มต้น</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/control.js"></script>
+</body>
+</html>

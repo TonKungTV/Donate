@@ -1,0 +1,37 @@
+{
+  "name": "donate-overlay",
+  "version": "1.1.0",
+  "description": "Donate Overlay สำหรับสตรีมเมอร์ — แจ้งเตือนการบริจาคแบบ real-time พร้อม PromptPay QR, สลิป, เสียง อนิเมชัน TTS และ Leaderboard",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "service:install": "node deploy/service.js install",
+    "service:uninstall": "node deploy/service.js uninstall"
+  },
+  "keywords": [
+    "donate",
+    "overlay",
+    "stream",
+    "obs",
+    "promptpay",
+    "twitch",
+    "youtube"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "multer": "^2.0.0",
+    "promptpay-qr": "^0.5.0",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.7.5"
+  },
+  "optionalDependencies": {
+    "node-windows": "^1.0.0-beta.8"
+  }
+}

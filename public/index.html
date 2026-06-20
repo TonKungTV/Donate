@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ส่งกำลังใจ • Donate Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&family=Sarabun:wght@400;600;700&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+  <div class="container">
+    <nav class="nav">
+      <div class="brand"><span class="logo">💸</span> Donate Overlay</div>
+      <div class="links">
+        <a href="/" class="active">บริจาค</a>
+        <a href="/leaderboard.html">อันดับ</a>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/control.html">Control</a>
+      </div>
+    </nav>
+
+    <!-- ขั้นที่ 1: กรอกข้อมูล -->
+    <div class="card glow" id="step-form">
+      <span class="eyebrow">▸ ส่งโดเนทขึ้นจอสด</span>
+      <h1>จุดพลัง<span class="grad-text">ให้สตรีมเมอร์</span> 💜</h1>
+      <p class="subtitle">กรอกชื่อ จำนวนเงิน และข้อความ → สแกน QR พร้อมเพย์ → แนบสลิป แล้วชื่อคุณจะเด้งขึ้นจอทันที</p>
+
+      <form id="donate-form">
+        <div class="field">
+          <label for="name">ชื่อของคุณ</label>
+          <input type="text" id="name" name="name" placeholder="เช่น น้องเมย์ (เว้นว่าง = ไม่ประสงค์ออกนาม)" maxlength="40" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label for="amount">จำนวนเงิน (<span class="cur">฿</span>)</label>
+          <input type="number" id="amount" name="amount" placeholder="0" min="1" step="1" inputmode="numeric" required />
+          <div class="amount-chips">
+            <button type="button" class="chip" data-amount="20">฿20</button>
+            <button type="button" class="chip" data-amount="50">฿50</button>
+            <button type="button" class="chip" data-amount="100">฿100</button>
+            <button type="button" class="chip" data-amount="200">฿200</button>
+            <button type="button" class="chip" data-amount="500">฿500</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="message">ข้อความถึงสตรีมเมอร์</label>
+          <textarea id="message" name="message" placeholder="พิมพ์ข้อความให้กำลังใจ..." maxlength="200"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submit-btn">สร้าง QR พร้อมเพย์ 📱</button>
+        <div class="toast" id="toast"></div>
+      </form>
+    </div>
+
+    <!-- ขั้นที่ 2: QR + อัปโหลดสลิป -->
+    <div class="card glow" id="step-pay" style="display:none">
+      <span class="eyebrow">▸ ขั้นที่ 2 / 2 — โอนแล้วแนบสลิป</span>
+      <h1>สแกนเพื่อ<span class="grad-text">โอน</span> 📱</h1>
+      <p class="subtitle">สแกน QR ด้วยแอปธนาคาร โอน <b class="mono" style="color:var(--gold)"><span class="cur">฿</span><span id="pay-amount">0</span></b> แล้วแนบสลิปด้านล่าง</p>
+
+      <div style="text-align:center">
+        <div class="qr-box"><img id="qr-img" alt="PromptPay QR" /></div>
+        <p class="note" style="margin-top:12px">พร้อมเพย์: <b id="pp-id" class="mono" style="color:var(--cyan)">-</b></p>
+      </div>
+
+      <div class="field" style="margin-top:20px">
+        <label for="slip">แนบสลิปการโอน (รูปภาพ ไม่เกิน 5MB)</label>
+        <input type="file" id="slip" accept="image/*" />
+      </div>
+      <img id="slip-preview" class="slip-preview" alt="ตัวอย่างสลิป" style="display:none" />
+
+      <div class="row" style="margin-top:10px">
+        <button type="button" class="btn btn-ghost" id="back-btn" style="flex:1">ย้อนกลับ</button>
+        <button type="button" class="btn btn-primary" id="confirm-btn" style="flex:2">ยืนยันการโอน ✓</button>
+      </div>
+      <div class="toast" id="toast2"></div>
+    </div>
+
+    <!-- ขั้นที่ 3: สำเร็จ -->
+    <div class="card glow" id="step-done" style="display:none; text-align:center">
+      <div class="success-burst">🎉</div>
+      <h1>ขอบคุณสำหรับ<span class="grad-text">การบริจาค!</span></h1>
+      <p class="subtitle">ข้อความของคุณถูกส่งขึ้นสตรีมเรียบร้อยแล้ว 💜</p>
+      <button type="button" class="btn btn-primary" id="again-btn" style="max-width:300px;margin:0 auto">บริจาคอีกครั้ง</button>
+    </div>
+
+    <p class="note">เมื่อแนบสลิปแล้ว ระบบจะแจ้งเตือนขึ้นจอสตรีมทันที · โหมดเชื่อใจ (ยังไม่ตรวจสลิปกับธนาคาร)</p>
+  </div>
+
+  <script src="/js/donate.js"></script>
+</body>
+</html>
