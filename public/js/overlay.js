@@ -251,9 +251,11 @@
     try {
       const audio = new Audio('/api/tts?text=' + encodeURIComponent(text));
       audio.volume = Math.min(1, Math.max(0, settings.volume));
-      audio.addEventListener('error', () => speakBrowser(text)); // เช่น 502/503 -> fallback
+      let fellBack = false;
+      const fallbackOnce = () => { if (fellBack) return; fellBack = true; speakBrowser(text); };
+      audio.addEventListener('error', fallbackOnce); // เช่น 502/503 -> fallback (ครั้งเดียว)
       const p = audio.play();
-      if (p && p.catch) p.catch(() => speakBrowser(text));
+      if (p && p.catch) p.catch(fallbackOnce);
     } catch (e) { speakBrowser(text); }
   }
 
