@@ -21,6 +21,8 @@ const { Server } = require('socket.io');
 const multer = require('multer');
 const generatePayload = require('promptpay-qr');
 const QRCode = require('qrcode');
+const { verifyOcrText } = require('./lib/slip-verify');
+const ocr = require('./lib/ocr'); // ใช้ ocr.runOcr เพื่อให้ mock ได้ตอนเทสต์
 
 const app = express();
 const server = http.createServer(app);
@@ -32,10 +34,11 @@ const CURRENCY = process.env.CURRENCY || '฿';
 const PROMPTPAY_ID = process.env.PROMPTPAY_ID || '0634284604'; // เบอร์/เลขบัตรพร้อมเพย์ของสตรีมเมอร์
 
 // ----- ที่เก็บข้อมูล -----
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = process.env.DATA_DIR_OVERRIDE || path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'donations.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 const SLIP_DIR = path.join(DATA_DIR, 'slips');
+const TTS_DIR = path.join(DATA_DIR, 'tts');
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -60,6 +63,12 @@ const DEFAULT_SETTINGS = {
   position: 'top', // top | center
   headlineTemplate: '{name} บริจาค {amount}',
   currency: CURRENCY,
+  // ---- ตรวจสลิป (OCR) ----
+  verifyEnabled: true,
+  expectedName: 'ธีรภัทร ปิ่นพรม',
+  // ---- เสียง ElevenLabs (ใช้ใน Task 7) ----
+  ttsProvider: 'elevenlabs', // 'elevenlabs' | 'browser'
+  ttsVoiceId: 'cgSgspJ2msm6clMCkdW9',
 };
 let settings = { ...DEFAULT_SETTINGS };
 
@@ -166,6 +175,7 @@ function publicDonation(d) {
     amount: d.amount,
     message: d.message,
     slip: d.slip ? '/slips/' + d.slip : null,
+    verify: d.verify ? { status: d.verify.status, nameFound: d.verify.nameFound } : null,
     createdAt: d.createdAt,
     confirmedAt: d.confirmedAt || null,
   };
@@ -267,9 +277,9 @@ app.post('/api/donate', async (req, res) => {
   }
 });
 
-// ขั้นที่ 2: อัปโหลดสลิป -> ยืนยันอัตโนมัติ + ยิงแจ้งเตือนทันที
+// ขั้นที่ 2: อัปโหลดสลิป -> ตรวจ OCR -> ยืนยัน/ปฏิเสธ
 app.post('/api/donations/:id/slip', (req, res) => {
-  upload.single('slip')(req, res, (err) => {
+  upload.single('slip')(req, res, async (err) => {
     if (err) return res.status(400).json({ ok: false, error: err.message || 'อัปโหลดไม่สำเร็จ' });
 
     const donation = donations.find((d) => d.id === req.params.id);
@@ -279,24 +289,61 @@ app.post('/api/donations/:id/slip', (req, res) => {
       return res.status(409).json({ ok: false, error: 'รายการนี้ยืนยันไปแล้ว' });
     }
 
-    donation.slip = req.file.filename;
-    donation.slipAt = Date.now();
-    donation.status = 'confirmed';
-    donation.confirmedAt = Date.now();
-    saveDonations();
+    const filePath = path.join(SLIP_DIR, req.file.filename);
 
-    // ยิงแจ้งเตือนขึ้น overlay ทันที (ไม่ต้องรออนุมัติ)
-    io.emit('donation', {
-      id: donation.id,
-      name: donation.name,
-      amount: donation.amount,
-      message: donation.message,
-      createdAt: donation.createdAt,
-    });
-    broadcastUpdates();
-    res.json({ ok: true });
+    // โหมดเชื่อใจ: ปิดการตรวจ -> ยืนยันทันที
+    if (!settings.verifyEnabled) {
+      donation.verify = { status: 'skipped', nameFound: null, slipLike: null, text: '', at: Date.now() };
+      return confirmAndBroadcast(donation, req.file.filename, res);
+    }
+
+    // ตรวจ OCR
+    let result, ocrText = '';
+    try {
+      ocrText = await ocr.runOcr(filePath);
+      result = verifyOcrText(ocrText, { expectedName: settings.expectedName });
+    } catch (e) {
+      result = { status: 'error' }; // fail-open
+    }
+
+    // ไม่ใช่สลิป -> ปฏิเสธ + ลบไฟล์ทิ้ง
+    if (result.status === 'not_a_slip') {
+      try { fs.unlinkSync(filePath); } catch (e) { /* ignore */ }
+      return res.status(400).json({
+        ok: false, reason: 'not_a_slip',
+        error: 'นี่ไม่ใช่สลิปการโอน หรืออ่านไม่ออก กรุณาแนบสลิปที่ชัดเจน',
+      });
+    }
+
+    // verified / unverified / error -> ยืนยัน + ติดธงตามผล
+    donation.verify = {
+      status: result.status,
+      nameFound: result.nameFound !== undefined ? result.nameFound : null,
+      slipLike: result.slipLike !== undefined ? result.slipLike : null,
+      text: ocrText,
+      at: Date.now(),
+    };
+    return confirmAndBroadcast(donation, req.file.filename, res);
   });
 });
+
+// ยืนยันรายการ + ยิงแจ้งเตือน + อัปเดตสถิติ
+function confirmAndBroadcast(donation, filename, res) {
+  donation.slip = filename;
+  donation.slipAt = Date.now();
+  donation.status = 'confirmed';
+  donation.confirmedAt = Date.now();
+  saveDonations();
+  io.emit('donation', {
+    id: donation.id,
+    name: donation.name,
+    amount: donation.amount,
+    message: donation.message,
+    createdAt: donation.createdAt,
+  });
+  broadcastUpdates();
+  res.json({ ok: true, verify: donation.verify ? { status: donation.verify.status, nameFound: donation.verify.nameFound } : null });
+}
 
 // ประวัติ (ค่าเริ่มต้น = เฉพาะที่ยืนยันแล้ว)
 app.get('/api/donations', (req, res) => {
@@ -337,6 +384,10 @@ function applySettings(input) {
   if (input.accentColor !== undefined) s.accentColor = hex(input.accentColor, s.accentColor);
   if (input.accentColor2 !== undefined) s.accentColor2 = hex(input.accentColor2, s.accentColor2);
   if (input.textColor !== undefined) s.textColor = hex(input.textColor, s.textColor);
+  if (input.verifyEnabled !== undefined) s.verifyEnabled = !!input.verifyEnabled;
+  if (typeof input.expectedName === 'string') s.expectedName = sanitizeText(input.expectedName, 60) || s.expectedName;
+  if (typeof input.ttsProvider === 'string') s.ttsProvider = input.ttsProvider === 'browser' ? 'browser' : 'elevenlabs';
+  if (typeof input.ttsVoiceId === 'string') s.ttsVoiceId = sanitizeText(input.ttsVoiceId, 40) || s.ttsVoiceId;
   return s;
 }
 
@@ -384,14 +435,20 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log('\n  💸 Donate Overlay พร้อมใช้งานแล้ว');
-  console.log('  ─────────────────────────────────────');
-  console.log(`  PromptPay    : ${PROMPTPAY_ID}`);
-  console.log(`  หน้าบริจาค   : http://localhost:${PORT}/`);
-  console.log(`  Overlay/OBS  : http://localhost:${PORT}/overlay.html`);
-  console.log(`  Dashboard    : http://localhost:${PORT}/dashboard.html`);
-  console.log(`  Control Panel: http://localhost:${PORT}/control.html`);
-  console.log(`  Leaderboard  : http://localhost:${PORT}/leaderboard.html`);
-  console.log('  ─────────────────────────────────────\n');
-});
+function start() {
+  server.listen(PORT, () => {
+    console.log('\n  💸 Donate Overlay พร้อมใช้งานแล้ว');
+    console.log('  ─────────────────────────────────────');
+    console.log(`  PromptPay    : ${PROMPTPAY_ID}`);
+    console.log(`  หน้าบริจาค   : http://localhost:${PORT}/`);
+    console.log(`  Overlay/OBS  : http://localhost:${PORT}/overlay.html`);
+    console.log(`  Dashboard    : http://localhost:${PORT}/dashboard.html`);
+    console.log(`  Control Panel: http://localhost:${PORT}/control.html`);
+    console.log(`  Leaderboard  : http://localhost:${PORT}/leaderboard.html`);
+    console.log('  ─────────────────────────────────────\n');
+  });
+}
+
+if (require.main === module) start();
+
+module.exports = { app, server, io, start };
