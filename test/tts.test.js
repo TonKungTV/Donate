@@ -33,6 +33,25 @@ test('getOrSynthesize: cache miss -> เรียก fetch แล้วเขี
 test('synthesize ผ่าน getOrSynthesize: โยน error เมื่อ response ไม่ ok', async () => {
   const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tts-'));
   const fetchImpl = async () => ({ ok: false, status: 401, text: async () => 'unauthorized' });
-  await assert.rejects(() => getOrSynthesize('x', { voiceId: 'v', model: 'm', apiKey: 'bad', cacheDir, fetchImpl }));
+  await assert.rejects(() => getOrSynthesize('x', { voiceId: 'v', model: 'm', apiKey: 'bad', cacheDir, fetchImpl }), /401/);
+  fs.rmSync(cacheDir, { recursive: true, force: true });
+});
+
+test('getOrSynthesize ส่ง request ถูก endpoint/headers/body', async () => {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tts-'));
+  let captured = null;
+  const fetchImpl = async (url, opts) => {
+    captured = { url, opts };
+    return { ok: true, arrayBuffer: async () => Buffer.from('AUDIO').buffer };
+  };
+  await getOrSynthesize('สวัสดี', { voiceId: 'VOICE123', model: 'eleven_multilingual_v2', apiKey: 'KEY', cacheDir, fetchImpl });
+  assert.strictEqual(captured.url, 'https://api.elevenlabs.io/v1/text-to-speech/VOICE123');
+  assert.strictEqual(captured.opts.method, 'POST');
+  assert.strictEqual(captured.opts.headers['xi-api-key'], 'KEY');
+  assert.match(captured.opts.headers['Content-Type'], /application\/json/);
+  const body = JSON.parse(captured.opts.body);
+  assert.strictEqual(body.text, 'สวัสดี');
+  assert.strictEqual(body.model_id, 'eleven_multilingual_v2');
+  assert.ok(body.voice_settings && typeof body.voice_settings.stability === 'number');
   fs.rmSync(cacheDir, { recursive: true, force: true });
 });
