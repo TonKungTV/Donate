@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "test": "node --test",
     "service:install": "node deploy/service.js install",
     "service:uninstall": "node deploy/service.js uninstall"
   },
