@@ -21,7 +21,7 @@ const { Server } = require('socket.io');
 const multer = require('multer');
 const generatePayload = require('promptpay-qr');
 const QRCode = require('qrcode');
-const { verifyOcrText } = require('./lib/slip-verify');
+const { verifyOcrText, extractRef, amountMatches, normalizeRef } = require('./lib/slip-verify');
 const ocr = require('./lib/ocr'); // ใช้ ocr.runOcr เพื่อให้ mock ได้ตอนเทสต์
 const tts = require('./lib/tts'); // ใช้ tts.getOrSynthesize เพื่อให้ mock ได้ตอนเทสต์
 
@@ -178,7 +178,7 @@ function publicDonation(d) {
     amount: d.amount,
     message: d.message,
     slip: d.slip ? '/slips/' + d.slip : null,
-    verify: d.verify ? { status: d.verify.status, nameFound: d.verify.nameFound } : null,
+    verify: d.verify ? { status: d.verify.status, nameFound: d.verify.nameFound, amountMatch: d.verify.amountMatch != null ? d.verify.amountMatch : null } : null,
     createdAt: d.createdAt,
     confirmedAt: d.confirmedAt || null,
   };
@@ -257,10 +257,17 @@ app.post('/api/donate', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'จำนวนเงินสูงเกินไป' });
   }
 
+  // เติมสตางค์สุ่ม 0.01-0.99 เพื่อให้ยอด unique (กันสลิปซ้ำ) — เฉพาะเมื่อเปิดตรวจสลิป
+  let finalAmount = Math.round(amount * 100) / 100;
+  if (settings.verifyEnabled) {
+    const satang = Math.floor(Math.random() * 99) + 1; // 1..99
+    finalAmount = Math.round(Math.floor(amount) * 100 + satang) / 100;
+  }
+
   const donation = {
     id: makeId(),
     name,
-    amount: Math.round(amount * 100) / 100,
+    amount: finalAmount,
     message,
     status: 'pending',
     slip: null,
@@ -279,6 +286,14 @@ app.post('/api/donate', async (req, res) => {
     res.json({ ok: true, donation: publicDonation(donation), qr: null, error: 'สร้าง QR ไม่สำเร็จ' });
   }
 });
+
+// มีสลิปที่เลขอ้างอิงนี้ถูกยืนยันไปแล้วหรือยัง (กันส่งซ้ำ)
+function isDuplicateRef(ref) {
+  const target = normalizeRef(ref);
+  if (!target) return false;
+  return donations.some((d) =>
+    d.status === 'confirmed' && d.verify && normalizeRef(d.verify.ref) === target);
+}
 
 // ขั้นที่ 2: อัปโหลดสลิป -> ตรวจ OCR -> ยืนยัน/ปฏิเสธ
 app.post('/api/donations/:id/slip', (req, res) => {
@@ -318,11 +333,26 @@ app.post('/api/donations/:id/slip', (req, res) => {
       });
     }
 
+    // เช็คเลขอ้างอิงซ้ำ -> บล็อก (เฉพาะเมื่อ OCR ไม่ error และอ่าน ref ได้)
+    const ref = result.status === 'error' ? null : extractRef(ocrText);
+    if (ref && isDuplicateRef(ref)) {
+      try { fs.unlinkSync(filePath); } catch (e) { /* ignore */ }
+      return res.status(400).json({
+        ok: false, reason: 'duplicate',
+        error: 'สลิปนี้ถูกใช้ไปแล้ว กรุณาใช้สลิปการโอนจริงครั้งใหม่',
+      });
+    }
+
+    // เทียบยอดในสลิปกับยอดที่ต้องโอน (มีสตางค์สุ่ม) — ไม่ตรง = ติดธง ไม่บล็อก
+    const amountMatch = result.status === 'error' ? null : amountMatches(ocrText, donation.amount);
+
     // verified / unverified / error -> ยืนยัน + ติดธงตามผล
     donation.verify = {
       status: result.status,
       nameFound: result.nameFound !== undefined ? result.nameFound : null,
       slipLike: result.slipLike !== undefined ? result.slipLike : null,
+      ref: ref || null,
+      amountMatch,
       text: ocrText,
       at: Date.now(),
     };
@@ -345,7 +375,7 @@ function confirmAndBroadcast(donation, filename, res) {
     createdAt: donation.createdAt,
   });
   broadcastUpdates();
-  res.json({ ok: true, verify: donation.verify ? { status: donation.verify.status, nameFound: donation.verify.nameFound } : null });
+  res.json({ ok: true, verify: donation.verify ? { status: donation.verify.status, nameFound: donation.verify.nameFound, amountMatch: donation.verify.amountMatch != null ? donation.verify.amountMatch : null } : null });
 }
 
 // ประวัติ (ค่าเริ่มต้น = เฉพาะที่ยืนยันแล้ว)
