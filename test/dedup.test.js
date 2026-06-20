@@ -3,9 +3,13 @@ const test = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const request = require('supertest');
 
-process.env.DATA_DIR_OVERRIDE = path.join(__dirname, '..', 'data-test-dedup');
+// ใช้โฟลเดอร์ชั่วคราว unique ต่อรอบรัน — กันข้อมูล (ref) ค้างจากรอบก่อนมาทำให้เจอ "duplicate" ผิด ๆ
+// (saveDonations มี debounce 300ms ที่อาจเขียนไฟล์หลัง cleanup; การใช้ชื่อ unique จึงตัดปัญหานี้ทิ้ง)
+const DATA_DIR = path.join(os.tmpdir(), `donate-dedup-${process.pid}-${Date.now()}`);
+process.env.DATA_DIR_OVERRIDE = DATA_DIR;
 const ocr = require('../lib/ocr');
 const { app } = require('../server');
 
@@ -67,5 +71,5 @@ test('publicDonation ไม่หลุด verify.ref / verify.text', async () =
 
 test.after(async () => {
   await ocr.terminate().catch(() => {});
-  fs.rmSync(path.join(__dirname, '..', 'data-test-dedup'), { recursive: true, force: true });
+  fs.rmSync(DATA_DIR, { recursive: true, force: true });
 });
