@@ -112,6 +112,8 @@
         show('done');
       } else if (data.reason === 'not_a_slip') {
         showToast(toast2, '❌ ไม่ใช่สลิป หรืออ่านไม่ออก แนบสลิปที่ชัดเจน', 'err');
+      } else if (data.reason === 'duplicate') {
+        showToast(toast2, '❌ สลิปนี้ถูกใช้ไปแล้ว กรุณาใช้สลิปการโอนจริงครั้งใหม่', 'err');
       } else {
         showToast(toast2, data.error || 'อัปโหลดไม่สำเร็จ', 'err');
       }

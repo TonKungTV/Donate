@@ -98,6 +98,15 @@
         right.append(badge);
       }
 
+      if (d.verify && d.verify.amountMatch === false) {
+        const ab = document.createElement('span');
+        ab.className = 'verify-badge v-warn';
+        ab.textContent = '⚠️ ยอดไม่ตรง';
+        ab.style.cssText = 'display:block;font-size:.72rem;margin-top:2px';
+        right.append(ab);
+        li.classList.add('flagged-unverified');
+      }
+
       li.append(left, amount, right);
       historyEl.append(li);
     });
