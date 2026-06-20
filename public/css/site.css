@@ -3,13 +3,6 @@
    ใช้ร่วมกัน: หน้าบริจาค / dashboard / control / leaderboard
    ============================================================ */
 
-/* รองรับการหมุนของขอบเรืองแสง (RGB ring) อย่างลื่นไหล */
-@property --ring {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-
 :root {
   /* ---- พาเลตต์ ---- */
   --void: #07060f;
@@ -45,52 +38,30 @@ html { scroll-behavior: smooth; }
 body {
   font-family: var(--font-body);
   color: var(--ink);
-  background: var(--void);
+  background-color: var(--void);
   min-height: 100vh;
   line-height: 1.6;
   overflow-x: hidden;
   position: relative;
-}
-
-/* ---- พื้นหลัง aurora เคลื่อนไหว (signature ambient) ---- */
-body::before,
-body::after {
-  content: '';
-  position: fixed;
-  z-index: -2;
-  width: 70vmax;
-  height: 70vmax;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.5;
-  pointer-events: none;
-  will-change: transform;
-}
-body::before {
-  top: -22vmax; left: -16vmax;
-  background: radial-gradient(circle, var(--ultra), transparent 62%);
-  animation: drift1 22s ease-in-out infinite alternate;
-}
-body::after {
-  bottom: -26vmax; right: -18vmax;
-  background: radial-gradient(circle, var(--cyan), transparent 62%);
-  animation: drift2 26s ease-in-out infinite alternate;
-}
-/* ตารางนีออนจาง ๆ เป็นพื้น */
-body {
+  /* ตารางนีออนจาง ๆ เป็นพื้น (static, ไม่มีคอสต์ตอนเลื่อน) */
   background-image:
     linear-gradient(rgba(150, 120, 255, 0.045) 1px, transparent 1px),
     linear-gradient(90deg, rgba(150, 120, 255, 0.045) 1px, transparent 1px);
   background-size: 46px 46px;
   background-position: center;
 }
-@keyframes drift1 {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(14vmax, 10vmax) scale(1.25); }
-}
-@keyframes drift2 {
-  0% { transform: translate(0, 0) scale(1.1); }
-  100% { transform: translate(-12vmax, -8vmax) scale(0.9); }
+
+/* ---- พื้นหลัง aurora แบบ static (ไม่มี blur/animation = ไม่รีเพนต์) ---- */
+/* เดิมใช้ filter: blur(90px) บนวงกลม 70vmax ที่วิ่งวนตลอด -> หน่วงหนักมาก */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(46vmax 46vmax at 12% -8%, rgba(177, 77, 255, 0.18), transparent 60%),
+    radial-gradient(50vmax 50vmax at 92% 108%, rgba(44, 232, 245, 0.15), transparent 60%);
 }
 
 a { color: var(--cyan); text-decoration: none; }
@@ -156,34 +127,32 @@ a:hover { text-shadow: var(--glow-cyan); }
 }
 
 /* ============================ CARD (glass + RGB ring) ============================ */
+/* พื้นทึบกึ่งโปร่ง แทน backdrop-filter: blur() เดิม
+   (backdrop-filter ซ้อนบนพื้นหลังที่ขยับ = รีเพนต์เต็มจอตลอดเวลา) */
 .card {
   position: relative;
-  background: var(--panel);
-  backdrop-filter: blur(18px) saturate(135%);
-  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  background: linear-gradient(180deg, rgba(26, 21, 52, 0.92), rgba(16, 12, 33, 0.94));
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 30px;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 .card + .card { margin-top: 22px; }
-/* ขอบเรืองแสง RGB หมุนรอบเฉพาะการ์ดเด่น (.card.glow) */
+/* ขอบเรืองแสง RGB เฉพาะการ์ดเด่น (.card.glow) — gradient นิ่ง ไม่หมุน */
 .card.glow::before {
   content: '';
   position: absolute;
   inset: -1.5px;
   border-radius: inherit;
   padding: 1.5px;
-  background: conic-gradient(from var(--ring),
+  background: conic-gradient(from 210deg,
     var(--ultra), var(--cyan), var(--magenta), var(--gold), var(--ultra));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite: exclude;
-  animation: ringSpin 6s linear infinite;
   pointer-events: none;
 }
-@keyframes ringSpin { to { --ring: 360deg; } }
 
 h1 {
   font-family: var(--font-display);
@@ -313,11 +282,8 @@ textarea { resize: vertical; min-height: 90px; }
   width: 100%;
   color: #fff;
   background: linear-gradient(120deg, var(--ultra), var(--magenta) 55%, var(--gold));
-  background-size: 180% 100%;
   box-shadow: 0 10px 30px rgba(177, 77, 255, 0.4), var(--glow-ultra);
-  animation: hueShift 6s ease infinite;
 }
-@keyframes hueShift { 50% { background-position: 100% 0; } }
 .btn-primary:hover { filter: brightness(1.1); box-shadow: 0 14px 40px rgba(255, 60, 166, 0.5); }
 .btn-ghost {
   background: rgba(150, 120, 255, 0.08);
@@ -448,11 +414,10 @@ textarea { resize: vertical; min-height: 90px; }
   inset: -2px;
   border-radius: 22px;
   padding: 2px;
-  background: conic-gradient(from var(--ring), var(--cyan), var(--ultra), var(--magenta), var(--cyan));
+  background: conic-gradient(from 210deg, var(--cyan), var(--ultra), var(--magenta), var(--cyan));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: ringSpin 5s linear infinite;
 }
 @keyframes qrPop { from { opacity: 0; transform: scale(0.8); } }
 .qr-box img { display: block; width: 250px; height: 250px; border-radius: 6px; position: relative; }

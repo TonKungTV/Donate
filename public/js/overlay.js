@@ -48,10 +48,10 @@
 
   // ---------- ระบบ tier ตามยอดบริจาค ----------
   function tierFor(amount) {
-    if (amount >= 1000) return { key: 'legendary', label: 'LEGENDARY', emoji: '👑', c1: '#ffd24a', c2: '#ff7a00', particles: 150, flash: true };
-    if (amount >= 500)  return { key: 'mega',      label: 'MEGA',      emoji: '🤩', c1: '#ff3ca6', c2: '#b14dff', particles: 90,  flash: false };
-    if (amount >= 100)  return { key: 'hype',      label: 'HYPE',      emoji: '🎉', c1: '#2ce8f5', c2: '#7a5cff', particles: 60,  flash: false };
-    return { key: 'spark', label: 'SPARK', emoji: '💜', c1: settings.accentColor, c2: settings.accentColor2, particles: 36, flash: false };
+    if (amount >= 1000) return { key: 'legendary', label: 'LEGENDARY', emoji: '👑', c1: '#ffd24a', c2: '#ff7a00', particles: 90, flash: true };
+    if (amount >= 500)  return { key: 'mega',      label: 'MEGA',      emoji: '🤩', c1: '#ff3ca6', c2: '#b14dff', particles: 60, flash: false };
+    if (amount >= 100)  return { key: 'hype',      label: 'HYPE',      emoji: '🎉', c1: '#2ce8f5', c2: '#7a5cff', particles: 48, flash: false };
+    return { key: 'spark', label: 'SPARK', emoji: '💜', c1: settings.accentColor, c2: settings.accentColor2, particles: 30, flash: false };
   }
 
   // ---------- คิว ----------
@@ -327,8 +327,7 @@
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot);
       ctx.fillStyle = p.color;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 8;
+      // ตัด shadowBlur ต่อ particle ออก — เป็นตัวฆ่าเฟรมเรตหลักของ canvas
       if (p.shape === 'rect') ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.6);
       else { ctx.beginPath(); ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2); ctx.fill(); }
       ctx.restore();

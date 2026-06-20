@@ -34,7 +34,7 @@ const ADMIN_KEY = process.env.ADMIN_KEY || ''; // ถ้าตั้งค่า
 const CURRENCY = process.env.CURRENCY || '฿';
 const PROMPTPAY_ID = process.env.PROMPTPAY_ID || '0634284604'; // เบอร์/เลขบัตรพร้อมเพย์ของสตรีมเมอร์
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || '';
-const ELEVENLABS_MODEL = process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2';
+const ELEVENLABS_MODEL = process.env.ELEVENLABS_MODEL || 'eleven_v3';
 
 // ----- ที่เก็บข้อมูล -----
 const DATA_DIR = process.env.DATA_DIR_OVERRIDE || path.join(__dirname, 'data');

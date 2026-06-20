@@ -1,0 +1,54 @@
+/* ============================================================
+   donate.css - เฉพาะหน้าบริจาคเดี่ยว (standalone)
+   พื้นหลัง three.js + ส่วนหัวชื่อช่อง + ปุ่มโซเชียล
+   (โหลดเฉพาะ index.html - ไม่กระทบหน้าอื่น)
+   ============================================================ */
+
+/* canvas พื้นหลัง 3D: อยู่เหนือ aurora (z=-2) แต่ใต้เนื้อหา (.container z=1) */
+#bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  display: block;
+  pointer-events: none;   /* ไม่บังการกด/พิมพ์ในฟอร์ม */
+}
+
+/* ---- ส่วนหัวช่อง (แทน nav เดิม) ---- */
+.channel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+.channel-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  letter-spacing: 0.5px;
+  background: linear-gradient(100deg, var(--cyan), var(--ultra) 45%, var(--magenta));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ---- ปุ่มโซเชียล ---- */
+.socials { display: flex; gap: 10px; }
+.socials a {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  color: var(--ink);
+  background: rgba(150, 120, 255, 0.08);
+  border: 1px solid var(--line);
+  transition: transform 0.14s, background 0.16s, border-color 0.16s, box-shadow 0.16s;
+}
+.socials a:hover { transform: translateY(-2px); background: rgba(177, 77, 255, 0.16); border-color: var(--ultra); box-shadow: var(--glow-ultra); }
+.socials a svg { width: 22px; height: 22px; display: block; fill: currentColor; }
+.socials a.yt:hover { color: #ff4d4d; border-color: #ff4d4d; box-shadow: 0 0 18px rgba(255, 77, 77, 0.4); }
+.socials a.tt:hover { color: var(--cyan); border-color: var(--cyan); box-shadow: var(--glow-cyan); }

@@ -1,12 +1,6 @@
 /* ============================================================
    OVERLAY (OBS Browser Source) — พื้นหลังโปร่งใส + เอฟเฟกต์จัดเต็ม
    ============================================================ */
-@property --ring {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-
 :root {
   --acc1: #b14dff;          /* สีหลักของ tier ปัจจุบัน (ตั้งโดย JS) */
   --acc2: #2ce8f5;          /* สีรอง */
@@ -75,23 +69,21 @@ html, body {
   overflow: hidden;
 }
 
-/* ขอบ RGB หมุนรอบ */
+/* ขอบ RGB — gradient นิ่ง (เดิมหมุน conic ตลอด = รีเพนต์ทุกเฟรม) */
 .alert::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
   padding: 2.5px;
-  background: conic-gradient(from var(--ring),
+  background: conic-gradient(from 210deg,
     var(--acc1), var(--acc2), var(--acc1), var(--acc2), var(--acc1));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite: exclude;
-  animation: ringSpin 4s linear infinite;
   z-index: -1;
 }
-@keyframes ringSpin { to { --ring: 360deg; } }
 
 /* แถบสแกนไลน์จาง ๆ ให้ดูเป็นจอดิจิทัล */
 .alert::after {
@@ -120,7 +112,8 @@ html, body {
   margin-bottom: 8px;
   animation: badgePulse 1.4s ease-in-out infinite;
 }
-@keyframes badgePulse { 50% { transform: scale(1.06); filter: brightness(1.15); } }
+/* เต้นด้วย transform อย่างเดียว (composited) — ตัด filter: brightness ที่บังคับรีเพนต์ */
+@keyframes badgePulse { 50% { transform: scale(1.06); } }
 
 .alert .emoji {
   font-size: 3.4rem;
@@ -158,17 +151,14 @@ html, body {
   opacity: 0.92;
   word-wrap: break-word;
 }
-/* เส้นใต้ไล่สีวิ่ง */
+/* เส้นใต้ไล่สี — นิ่ง (เดิม animate background-position = รีเพนต์ทุกเฟรม) */
 .alert .underbar {
   height: 3px;
   margin: 16px auto 0;
   width: 60%;
   border-radius: 3px;
   background: linear-gradient(90deg, transparent, var(--acc1), var(--acc2), transparent);
-  background-size: 200% 100%;
-  animation: barSlide 1.6s linear infinite;
 }
-@keyframes barSlide { to { background-position: 200% 0; } }
 
 /* ======================= เข้า/ออก ======================= */
 .alert.enter { animation: alertIn 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.35) both; }

@@ -3,23 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ส่งกำลังใจ • Donate Overlay</title>
+  <title>ส่งกำลังใจ • TonKungTV</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&family=Sarabun:wght@400;600;700&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/site.css" />
+  <link rel="stylesheet" href="/css/donate.css" />
 </head>
 <body>
+  <canvas id="bg-canvas"></canvas>
+
   <div class="container">
-    <nav class="nav">
-      <div class="brand"><span class="logo">💸</span> Donate Overlay</div>
-      <div class="links">
-        <a href="/" class="active">บริจาค</a>
-        <a href="/leaderboard.html">อันดับ</a>
-        <a href="/dashboard.html">Dashboard</a>
-        <a href="/control.html">Control</a>
+    <header class="channel-head">
+      <div class="channel-name">TonKungTV</div>
+      <div class="socials">
+        <a class="yt" href="https://www.youtube.com/@TonKungTV" target="_blank" rel="noopener" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.5 15.5v-7l6.5 3.5-6.5 3.5z"/></svg>
+        </a>
+        <a class="tt" href="https://www.tiktok.com/@tonkungtv" target="_blank" rel="noopener" aria-label="TikTok">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 3c.31 2.13 1.5 3.83 3.5 4.2v2.53c-1.27.06-2.5-.31-3.5-1.06v6.08a6 6 0 1 1-6-6c.31 0 .62.02.91.07v2.62a3.4 3.4 0 0 0-.91-.13 3.44 3.44 0 1 0 3.44 3.44V3h2.56z"/></svg>
+        </a>
       </div>
-    </nav>
+    </header>
 
     <!-- ขั้นที่ 1: กรอกข้อมูล -->
     <div class="card glow" id="step-form">
@@ -90,6 +95,10 @@
     <p class="note">เมื่อแนบสลิปแล้ว ระบบจะตรวจด้วย OCR ว่าเป็นสลิปจริงและโอนเข้าชื่อผู้รับถูกต้อง ก่อนแจ้งเตือนขึ้นจอสตรีม</p>
   </div>
 
+  <script type="importmap">
+  { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module" src="/js/scene.js"></script>
   <script src="/js/donate.js"></script>
 </body>
 </html>
