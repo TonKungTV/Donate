@@ -48,10 +48,11 @@
 
   // ---------- ระบบ tier ตามยอดบริจาค ----------
   function tierFor(amount) {
-    if (amount >= 1000) return { key: 'legendary', label: 'LEGENDARY', emoji: '👑', c1: '#ffd24a', c2: '#ff7a00', particles: 90, flash: true };
-    if (amount >= 500)  return { key: 'mega',      label: 'MEGA',      emoji: '🤩', c1: '#ff3ca6', c2: '#b14dff', particles: 60, flash: false };
-    if (amount >= 100)  return { key: 'hype',      label: 'HYPE',      emoji: '🎉', c1: '#2ce8f5', c2: '#7a5cff', particles: 48, flash: false };
-    return { key: 'spark', label: 'SPARK', emoji: '💜', c1: settings.accentColor, c2: settings.accentColor2, particles: 30, flash: false };
+    const colors = { c1: settings.accentColor, c2: settings.accentColor2 };
+    if (amount >= 1000) return { key: 'legendary', label: 'LEGENDARY', emoji: '👑', ...colors, particles: 90, flash: true };
+    if (amount >= 500)  return { key: 'mega',      label: 'MEGA',      emoji: '🤩', ...colors, particles: 60, flash: false };
+    if (amount >= 100)  return { key: 'hype',      label: 'HYPE',      emoji: '🎉', ...colors, particles: 48, flash: false };
+    return { key: 'spark', label: 'SPARK', emoji: '💜', ...colors, particles: 30, flash: false };
   }
 
   // ---------- คิว ----------

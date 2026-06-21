@@ -11,5 +11,9 @@ services:
       - PROMPTPAY_ID=${PROMPTPAY_ID:-0634284604}
       - CURRENCY=${CURRENCY:-฿}
       - ADMIN_KEY=${ADMIN_KEY:-}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY:-}
+      - ELEVENLABS_MODEL=${ELEVENLABS_MODEL:-eleven_v3}
+      - TESSDATA_PATH=${TESSDATA_PATH:-}
+      - OCR_TIMEOUT_MS=${OCR_TIMEOUT_MS:-20000}
     volumes:
       - ./data:/app/data
